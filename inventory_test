@@ -1,0 +1,18 @@
+[all:vars]
+timeout=60
+ansible_ssh_user=root
+ansible_ssh_pass="rootpass"
+ansible_ssh_common_args="-o StrictHostKeyChecking=no"
+
+[all]
+192.168.0.60 ansible_host=masterelk1.fastcloud.fwb
+#192.168.0.61 ansible_host=masterelk2.fastcloud.fwb
+192.168.0.70 ansible_host=hotelk1.fastcloud.fwb
+#192.168.0.71 ansible_host=hotelk2.fastcloud.fwb
+192.168.0.80 ansible_host=warmelk1.fastcloud.fwb
+#192.168.0.81 ansible_host=warmelk2.fastcloud.fwb
+
+#192.168.0.52 ansible_host=warmhot1.fastcloud.fwb
+#192.168.111.163 ansible_host=bperhot2.cutaway.lab
+#192.168.111.164 ansible_host=bperwarm1.cutaway.lab
+#192.168.111.165 ansible_host=bperwarm2.cutaway.lab

@@ -1,0 +1,28 @@
+---
+- name: RedHat - add Elasticsearch repo
+  become: yes
+  template:
+    src: 'elasticsearch.repo'
+    dest: '/etc/yum.repos.d/elasticsearch-{{ es_repo_name }}.repo'
+  when: es_use_repository and es_add_repository
+
+- name: RedHat - remove unused Elasticsearch repo
+  become: yes
+  file:
+    path: '/etc/yum.repos.d/elasticsearch-{{ es_other_repo_name }}.repo'
+    state: absent
+  when: es_use_repository
+
+- name: RedHat - Install logstash
+  become: yes
+  yum:
+    name: 'logstash'
+    state: present
+  notify: restart logstash
+
+#- name: RedHat - Install Elasticsearch from url
+#  become: yes
+#  yum: name={% if es_custom_package_url is defined %}{{ es_custom_package_url }}{% else %}{{ es_package_url }}-{{ es_version }}.noarch.rpm{% endif %} state=present
+#  when: not es_use_repository
+#  register: elasticsearch_install_from_package
+#  notify: restart elasticsearch

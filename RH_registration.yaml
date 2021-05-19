@@ -1,0 +1,64 @@
+# Main configuration file
+
+- name: RHE Registration
+  hosts: all
+  gather_facts: false
+  become: true
+  tags:
+    - registration
+  roles:
+    - { name: registration }
+
+#- name: RHE Registration
+#  hosts: elkm2
+#  gather_facts: false
+#  become: true
+#  tags:
+#    - registration
+#  roles:
+#    - { name: registration }
+
+#- name: RHE Registration
+#  hosts: elkm3
+#  gather_facts: false
+#  become: true
+#  tags:
+#    - registration
+#  roles:
+#    - { name: registration }
+
+#- name: RHE Registration
+#  hosts: elkhot1
+#  gather_facts: false
+#  become: true
+#  tags:
+#    - registration
+#  roles:
+#    - { name: registration }
+
+#- name: RHE Registration
+#  hosts: elkhot2
+#  gather_facts: false
+#  become: true
+#  tags:
+#    - registration
+#  roles:
+#    - { name: registration }
+
+#- name: RHE Registration
+#  hosts: elkwarm1
+#  gather_facts: false
+#  become: true
+#  tags:
+#    - registration
+#  roles:
+#    - { name: registration }
+
+#- name: RHE Registration
+#  hosts: elkwarm2
+#  gather_facts: false
+#  become: true
+#  tags:
+#    - registration
+#  roles:
+#    - { name: registration }

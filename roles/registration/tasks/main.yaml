@@ -1,0 +1,101 @@
+---
+- name: RHE Registration to RHE subscription
+  command: subscription-manager register --username=smolino@cutaway.it --password=Wildcat1271 --force
+
+- name: RHE Registration subscription refresh
+  command:  subscription-manager refresh
+
+- name: RHE Registration to RHE subscription attach
+  command: subscription-manager attach --pool=8a85f99a707807c30170853f59b404a4
+
+- name: RHE Registration to RHE subscription disable repo
+  command: subscription-manager repos --disable="*"
+
+- name: RHE Registration to RHE subscription repolist
+  command: yum repolist
+
+- name: RHE Registration to RHE subscription repo register
+  command: subscription-manager repos \
+           --enable="rhel-7-server-rpms" \
+           --enable="rhel-7-server-extras-rpms" \
+#           --enable="rhel-7-server-ose-3.11-rpms" \
+#           --enable="rhel-7-server-ansible-2.9-rpms"
+
+#- name: RHE Registration to Openshift subscription install repo gluster
+#  command: subscription-manager repos --enable=rh-gluster-3-client-for-rhel-7-server-rpms
+
+- name: RHE Registration subscription install packages
+  command: yum install -y wget git net-tools bind-utils yum-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct
+
+#- name: RHE Registration to Openshift subscription install glusterfs-fuse
+#  command: yum install -y glusterfs-fuse
+
+#- name: RHE Registration to Openshift subscription install docker
+#  command: yum install -y docker-1.13.1
+
+- name: yum update
+  command: yum update -y
+
+#- name: install java
+#  command: yum -y install java-1.8.0-openjdk  java-1.8.0-openjdk-devel
+
+#- name: set java variables
+#  command: |
+#           cat <<EOF | sudo tee /etc/profile.d/java8.sh
+#           export JAVA_HOME=/usr/lib/jvm/jre-openjdk
+#           export PATH=\$PATH:\$JAVA_HOME/bin
+#           export CLASSPATH=.:\$JAVA_HOME/jre/lib:\$JAVA_HOME/lib:\$JAVA_HOME/lib/tools.jar
+#           EOF
+
+#- name: apply variables
+#  command: source /etc/profile.d/java8.sh
+
+#- name: install elk repos
+#  command: |
+#           cat <<EOF | sudo tee /etc/yum.repos.d/elasticsearch.repo
+#           [elasticsearch-7.x]
+#           name=Elasticsearch repository for 7.x packages
+#           baseurl=https://artifacts.elastic.co/packages/oss-7.x/yum
+#           gpgcheck=1
+#           gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+#           enabled=1
+#           autorefresh=1
+#           type=rpm-md
+#           EOF
+
+- name: RHE Registration to Openshift subscription yum update
+  command: sudo yum clean all
+
+- name: "Disable Tuned and Firewalld"
+  service:
+    name={{ item }}
+    enabled=no
+    state=stopped
+  with_items:
+    - tuned
+    - firewalld
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Add in grub lines to disable THP
+  replace:
+    path: /etc/default/grub
+    regexp: 'quiet'
+    replace: 'quiet transparent_hugepage=never'
+
+- name: Apply grub and execute grub2
+  shell: grub2-mkconfig -o /boot/grub2/grub.cfg
+
+- name: Add parameter to systemctl.conf
+  lineinfile:
+    path: /etc/sysctl.d/swappiness-conf.conf
+    line: vm.swappiness=1
+    create: yes
+
+- name: Disable firewalld
+  command: systemctl disable firewalld
+
+- name: Stop firewalld
+  command: systemctl stop firewalld

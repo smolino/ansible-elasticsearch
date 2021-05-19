@@ -1,0 +1,43 @@
+---
+- name: RHE Registration to Openshift subscription
+  command: subscription-manager register --username=smolino@cutaway.it --password=Wildcat1271 --force
+
+- name: RHE Registration to Openshift subscription refresh
+  command:  subscription-manager refresh
+
+- name: RHE Registration to Openshift subscription attach
+  command: subscription-manager attach --pool=8a85f99a707807c30170853f59b404a4
+
+- name: RHE Registration to Openshift subscription disable repo
+  command: subscription-manager repos --disable="*"
+
+- name: RHE Registration to Openshift subscription repolist
+  command: yum repolist
+
+- name: RHE Registration to Openshift subscription repo register
+  command: subscription-manager repos \
+           --enable="rhel-7-server-rpms" \
+           --enable="rhel-7-server-extras-rpms" \
+#           --enable="rhel-7-server-ose-3.11-rpms" \
+           --enable="rhel-7-server-ansible-2.9-rpms"
+
+#- name: RHE Registration to Openshift subscription install repo gluster
+#  command: subscription-manager repos --enable=rh-gluster-3-client-for-rhel-7-server-rpms
+
+#- name: RHE Registration to Openshift subscription install packages
+#  command: yum install -y wget git net-tools bind-utils yum-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct
+
+#- name: RHE Registration to Openshift subscription install glusterfs-fuse
+#  command: yum install -y glusterfs-fuse
+
+#- name: RHE Registration to Openshift subscription install docker
+#  command: yum install -y docker-1.13.1
+
+- name: RHE Registration to Openshift subscription yum update
+  command: yum update -y
+
+#- name: RHE Registration to Openshift subscription enable docker
+#  command: systemctl enable docker
+
+#- name: RHE Registration to Openshift subscription start docker
+#  command: systemctl start docker

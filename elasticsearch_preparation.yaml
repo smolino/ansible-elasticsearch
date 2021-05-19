@@ -1,0 +1,144 @@
+- hosts: all
+  tasks:
+    - name: "Disable Tuned and Firewalld"
+      service:
+        name={{ item }}
+        enabled=no
+        state=stopped
+      with_items:
+        - tuned
+        - firewalld
+
+    - name: Disable SELinux
+      selinux:
+        state: disabled
+
+        #    - name: Disable THP
+        # shell: |
+        #echo "never" >> /sys/kernel/mm/transparent_hugepage/enabled
+        #cat /sys/kernel/mm/transparent_hugepage/enabled
+
+        #- name: Disable defrag
+        #shell: |
+        #echo "never" > /sys/kernel/mm/transparent_hugepage/defrag
+        #cat  /sys/kernel/mm/transparent_hugepage/defrag
+
+        #- name: Disable THP added to rc.local
+        #lineinfile:
+        #path: /etc/rc.local
+        #line: |
+        #  echo never > /sys/kernel/mm/transparent_hugepage/enabled
+        #  echo never > /sys/kernel/mm/transparent_hugepage/defrag
+
+        #- name: Set Permission
+        #shell: chmod +x /etc/rc.d/rc.local
+
+        #    - name: Add in grub lines to disable THP
+        #      replace:
+        #path: /etc/default/grub
+        #regexp: 'quiet'
+        #replace: 'quiet transparent_hugepage=never'
+
+        #- name: Apply grub and execute grub2
+        #shell: grub2-mkconfig -o /boot/grub2/grub.cfg
+
+    - name: Add parameter to systemctl.conf
+      lineinfile:
+        path: /etc/sysctl.d/elasticsearch.conf
+        line: vm.swappiness=1
+        create: yes
+
+    - name: Add parameter to systemctl.conf
+      lineinfile:
+        path: /etc/sysctl.d/elasticsearch.conf
+        line: vm.max_map_count=262144
+        create: yes
+
+    - name: Set a hostname
+      ansible.builtin.hostname:
+        name: "{{ ansible_host }}"
+
+    - name: "Remove host on /etc/hots"
+      lineinfile:
+        path: /etc/hosts
+        regexp: "RH7-5" 
+        state: absent
+
+    - name: Add RHUA host to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+      with_items:
+      - '93.45.1.157 lb.fastcloud.fwb'
+      - '192.168.0.60 masterelk1.bper.fastcloud.fwb'
+      - '192.168.0.61 masterelk2.bper.fastcloud.fwb'
+      - '192.168.0.70 hotelk1.bper.fastcloud.fwb'
+      - '192.168.0.71 hotelk2.bper.fastcloud.fwb'
+      - '192.168.0.72 hotelk3.bper.fastcloud.fwb'
+
+    - name: apply sysctl
+      shell: |
+        sysctl -w vm.swappiness=1i
+        sysctl -w vm.max_map_count=262144
+
+    -  name: Replace a localhost entry with our own
+       ansible.builtin.lineinfile:
+         path: /etc/sysconfig/network-scripts/ifcfg-ens160
+         regexp: 'DNS1=192.168.0.1'
+         line: DNS1=8.8.8.8
+
+    - name: network restart
+      command: "systemctl restart network"
+
+    - name: Copy RHUA Repository
+      ansible.builtin.copy:
+        src: rhsscp-2.0-1.noarch.rpm
+        dest: /opt/rhsscp-2.0-1.noarch.rpm
+
+    - name: Install RHUA Repo
+      command: "yum localinstall /opt/rhsscp-2.0-1.noarch.rpm -y"
+
+    - name: Install Yum repolist
+      command: "yum repolist"
+
+    - name: Install a list of packages
+      yum:
+        name:
+          - unzip
+          - curl
+          - wget
+        state: present
+
+    - name: create /etc/elasticsearch folder
+      command: | 
+                mkdir -p /etc/elasticsearch/certs
+
+    - name: Copy certificate certs.zip
+      ansible.builtin.copy:
+        src: certs_bper_prod.zip
+        dest: /opt/
+
+    - name: copy certificate to certs folder
+      command: cp /opt/certs_bper_prod.zip /etc/elasticsearch/certs/
+
+                #    - name: unzip certificates
+                # command: |
+                #unzip /etc/elasticsearch/certs/certs_bper_prod.zip
+
+    - name: Unzip certificates
+      ansible.builtin.unarchive:
+        src: /opt/certs_bper_prod.zip
+        dest: /etc/elasticsearch/certs/
+        remote_src: yes
+
+    - name: Update all installed packages using YUM module
+      yum:
+        name: '*'
+        state: latest
+        update_cache: yes
+        update_only: yes
+      register: yum_update_status
+
+    - name: Reboot when packages were updated
+      reboot:
+      when: yum_update_status.changed

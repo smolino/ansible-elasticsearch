@@ -1,0 +1,86 @@
+---
+- hosts: elkm1
+  roles:
+       - elasticsearch
+  vars:
+    es_heap_size: "6g"
+    es_config:
+      cluster.initial_master_nodes: masterelk1.bper.fastcloud.fwb,masterelk2.bper.fastcloud.fwb
+      cluster.name: elk-cluster
+      discovery.seed_hosts: masterelk1.bper.fastcloud.fwb:9300,masterelk2.bper.fastcloud.fwb:9300
+      http.port: 9200
+      node.roles: [ "master", "remote_cluster_client", "ingest" ]
+      bootstrap.memory_lock: false
+      network.host: "{{ansible_fqdn}}"
+      xpack.security.enabled: true
+      xpack.security.http.ssl.enabled: true
+      xpack.security.transport.ssl.enabled: true
+      xpack.security.http.ssl.key: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.key
+      xpack.security.http.ssl.certificate: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.crt
+      xpack.security.http.ssl.certificate_authorities: /etc/elasticsearch/certs/ca/ca.crt
+      xpack.security.transport.ssl.key: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.key
+      xpack.security.transport.ssl.certificate: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.crt
+      xpack.security.transport.ssl.certificate_authorities: /etc/elasticsearch/certs/ca/ca.crt
+      node.name: "{{ansible_fqdn}}"
+
+- hosts: elkhot1
+  roles:
+     - role: elastic.elasticsearch
+  vars:
+    es_heap_size: "6g"
+    es_data_dirs:
+      - "/opt/elasticsearch"
+    es_config:
+      cluster.initial_master_nodes: masterelk1.bper.fastcloud.fwb,masterelk2.bper.fastcloud.fwb
+      cluster.name: elk-cluster
+      discovery.seed_hosts: masterelk1.bper.fastcloud.fwb:9300,masterelk2.bper.fastcloud.fwb:9300
+      http.port: 9200
+      node.roles: [ "data_hot", "data_content" ]
+      bootstrap.memory_lock: false
+      network.host: "{{ansible_fqdn}}"
+      xpack.security.enabled: true
+      xpack.security.http.ssl.enabled: true
+      xpack.security.transport.ssl.enabled: true
+      xpack.security.http.ssl.key: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.key
+      xpack.security.http.ssl.certificate: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.crt
+      xpack.security.http.ssl.certificate_authorities: /etc/elasticsearch/certs/ca/ca.crt
+      xpack.security.transport.ssl.key: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.key
+      xpack.security.transport.ssl.certificate: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.crt
+      xpack.security.transport.ssl.certificate_authorities: /etc/elasticsearch/certs/ca/ca.crt
+      node.attr.box_type: hot
+      node.name: "{{ansible_fqdn}}"
+
+- hosts: elkwarm1
+  roles:
+     - role: elastic.elasticsearch
+  vars:
+    es_heap_size: "4g"
+    es_data_dirs:
+      - "/opt/elasticsearch"
+    es_config:
+      cluster.initial_master_nodes: masterelk1.fastcloud.fwb
+      cluster.name: elk-cluster
+      discovery.seed_hosts: masterelk1.fastcloud.fwb:9300
+      http.port: 9200
+      node.roles: [ "data_warm", "data_content" ]
+      bootstrap.memory_lock: false
+      network.host: "{{ansible_fqdn}}"
+      xpack.security.enabled: true
+      xpack.security.http.ssl.enabled: true
+      xpack.security.transport.ssl.enabled: true
+      xpack.security.http.ssl.key: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.key
+      xpack.security.http.ssl.certificate: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.crt
+      xpack.security.http.ssl.certificate_authorities: /etc/elasticsearch/certs/ca/ca.crt
+      xpack.security.transport.ssl.key: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.key
+      xpack.security.transport.ssl.certificate: /etc/elasticsearch/certs/{{ansible_fqdn}}/{{ansible_fqdn}}.crt
+      xpack.security.transport.ssl.certificate_authorities: /etc/elasticsearch/certs/ca/ca.crt
+      node.attr.box_type: warm
+      node.name: "{{ansible_fqdn}}"
+
+- hosts: elkkibana
+  roles:
+     - role: kibana
+
+- hosts: logstash
+  roles:
+     - role: logstash

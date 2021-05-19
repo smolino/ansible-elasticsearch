@@ -1,9 +1,9 @@
 ---
-es_version: "7.10.2"
+es_version: "7.10.1-1"
 es_use_snapshot_release: false
 oss_version: false
 es_package_name: "elasticsearch"
-es_version_lock: false
+es_version_lock: true
 es_use_repository: true
 es_add_repository: true
 es_templates_fileglob: ""
@@ -37,8 +37,8 @@ es_allow_downgrades: false
 es_xpack_trial: false
 #These are used for internal operations performed by ansible.
 #They do not affect the current configuration
-es_api_scheme: "http"
-es_api_host: "localhost"
+es_api_scheme: "https"
+es_api_host: {{ ansible_fqdn }}
 es_api_port: 9200
 es_api_uri: "{{ es_api_scheme }}://{{ es_api_host }}:{{ es_api_port }}"
 es_security_api: "{{ '_security' if es_version is version('7.0.0', '>=') else '_xpack/security' }}"
@@ -53,8 +53,8 @@ es_heap_dump_path: "/var/lib/elasticsearch"
 
 # SSL/TLS parameters
 es_enable_auto_ssl_configuration: true
-es_enable_http_ssl: false
-es_enable_transport_ssl: false
+es_enable_http_ssl: true
+es_enable_transport_ssl: true
 es_ssl_upload: true
 es_ssl_keystore: ""
 es_ssl_keystore_password: ""
